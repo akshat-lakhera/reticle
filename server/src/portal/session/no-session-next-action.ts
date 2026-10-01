@@ -14,6 +14,7 @@
  */
 
 import { NoSessionAction, RETICLE_URL_PARAM, ReticleEnv, redactUrl } from '@reticlehq/core';
+import { detectNonJsEcosystem, noPackageJsonMessage } from '@reticlehq/init';
 import type { DevCommand } from './dev-server/dev-command.js';
 
 /** The executable half of the no-session payload. */
@@ -32,6 +33,11 @@ interface NextActionFacts {
   initialized: boolean;
   listening: readonly number[];
   dev: DevCommand | undefined;
+  /**
+   * File-existence predicate for the project root, pure for testing.
+   * Used to recognize non-JS ecosystems (e.g. Flutter) when no dev script exists.
+   */
+  exists?: (file: string) => boolean;
   /** Configs found in other workspace directories: positive evidence of a scope mismatch. */
   configsElsewhere?: readonly { directory: string; projectId?: string }[];
   /**
@@ -215,6 +221,12 @@ export function nextActionFor(facts: NextActionFacts): NoSessionNextAction {
   if (0 === facts.listening.length) {
     const dev = facts.dev;
     if (dev === undefined) {
+      if (facts.exists !== undefined && detectNonJsEcosystem(facts.exists) !== undefined) {
+        return {
+          action: NoSessionAction.START_DEV_SERVER,
+          reason: noPackageJsonMessage(facts.exists),
+        };
+      }
       return {
         action: NoSessionAction.START_DEV_SERVER,
         reason:
