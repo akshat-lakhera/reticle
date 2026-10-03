@@ -263,4 +263,23 @@ describe('the watch detects non-JS projects when no dev script is found', () => 
     expect(nextAction?.reason).toContain('This is a Flutter project.');
     expect(nextAction?.reason).not.toContain('no dev script');
   });
+
+  it('does not diagnose Flutter when a JS manifest is present too', async () => {
+    const dir = projectDir(undefined);
+    writeFileSync(join(dir, 'pubspec.yaml'), 'name: mobile_flutter\n', 'utf8');
+    writeFileSync(join(dir, 'package.json'), '{"name":"web"}\n', 'utf8');
+    const { manager, next } = stubSessions();
+    const stop = startNoSessionWatch({
+      sessions: manager,
+      port: 4400,
+      initialized: false,
+      directory: dir,
+      probe: () => Promise.resolve([]),
+    });
+    await Promise.resolve();
+    const nextAction = next();
+    stop();
+    expect(nextAction?.reason).toContain('no dev script');
+    expect(nextAction?.reason).not.toContain('Flutter');
+  });
 });

@@ -73,9 +73,9 @@ const DECLARED_CROSSINGS: Record<string, string> = {
     'the no-session next action hands an agent the same one; two copies of the rule disagreed, and ' +
     'the daemon handed Tauri users plain `vite`. No code path, only a string decision.',
   'portal/session/no-session-next-action.ts':
-    'Reads `detectNonJsProject` to diagnose non-JS project ecosystems (like Flutter) when ' +
-    'no session is running, avoiding false "no dev script" guidance. Pure manifest rule and detector, ' +
-    'reusing the canonical non-JS ecosystem registry from the scaffolder.',
+    'Reads the pure non-JS ecosystem marker detector when there is no package.json and no ' +
+    'session is running, so Flutter gets an accurate diagnosis. The rest of the initializer ' +
+    'is never invoked on this path.',
 };
 
 /** Every module in `reached` that imports the scaffolder package directly. */

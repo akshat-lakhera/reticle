@@ -64,6 +64,19 @@ describe('nextActionFor', () => {
     expect(next.command).toBeUndefined();
     expect(next.reason).toContain('This looks like a Python project');
     expect(next.reason).not.toContain('no dev script');
+    expect(next.reason).not.toContain('snippet below');
+  });
+
+  it('mixed Flutter and JS project with no dev script: describes the JS manifest', () => {
+    const next = nextActionFor({
+      everConnected: false,
+      initialized: false,
+      listening: [],
+      dev: undefined,
+      exists: (file) => ['package.json', 'pubspec.yaml'].includes(file),
+    });
+    expect(next.reason).toContain('no dev script');
+    expect(next.reason).not.toContain('Flutter');
   });
 
   it('carries the port the dev script pins, so the agent knows where the app will be', () => {

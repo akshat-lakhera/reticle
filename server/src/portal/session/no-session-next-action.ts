@@ -221,11 +221,20 @@ export function nextActionFor(facts: NextActionFacts): NoSessionNextAction {
   if (0 === facts.listening.length) {
     const dev = facts.dev;
     if (dev === undefined) {
-      if (facts.exists !== undefined && detectNonJsEcosystem(facts.exists) !== undefined) {
-        return {
-          action: NoSessionAction.START_DEV_SERVER,
-          reason: noPackageJsonMessage(facts.exists),
-        };
+      if (facts.exists !== undefined && !facts.exists('package.json')) {
+        const ecosystem = detectNonJsEcosystem(facts.exists);
+        if (ecosystem !== undefined) {
+          return {
+            action: NoSessionAction.START_DEV_SERVER,
+            reason:
+              'Flutter' === ecosystem
+                ? noPackageJsonMessage(facts.exists)
+                : `This looks like a ${ecosystem} project, with no package.json in this directory. ` +
+                  'There is no dev command to hand you. Ask the human how the app starts and which ' +
+                  'URL it serves. If the web app has its own package.json in another directory, ' +
+                  'run Reticle from that app directory instead.',
+          };
+        }
       }
       return {
         action: NoSessionAction.START_DEV_SERVER,
